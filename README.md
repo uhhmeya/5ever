@@ -1,15 +1,6 @@
 # 5ever
 
-How to run frontend :
-    cd frontend
-    npm run dev
+backend % python run.py
 
-How to run backend : 
-    cd backend
-    python -m src.app
+backend % python test.py
 
-How to run yjs :
-    cd yjs-server
-    node server.js
-
-How to check if yjs server is running : http://localhost:1234/

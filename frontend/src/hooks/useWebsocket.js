@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { socket } from '../utils/socket.js';
+import { socketio } from '../utils/socketio.js';
 import { obtainUserID } from "../utils/userID.js";
 
 export function useWebSocket() {
@@ -9,20 +9,20 @@ export function useWebSocket() {
 
     useEffect(() => {
 
-        socket.on('connect', () => {
+        socketio.on('connect', () => {
             setIsConnected(true);
             const id = obtainUserID();
             setUserId(id);
-            socket.emit('user_id', { userId: id });
+            socketio.emit('user_id', { userId: id });
         });
 
-        socket.on('disconnect', () => setIsConnected(false));
+        socketio.on('disconnect', () => setIsConnected(false));
 
         return () => {
-            socket.off('connect');
-            socket.off('disconnect');
+            socketio.off('connect');
+            socketio.off('disconnect');
         };
     }, []);
 
-    return { socket, isConnected, userId };
+    return { socket: socketio, isConnected, userId };
 }

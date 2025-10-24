@@ -1,17 +1,23 @@
-from . import app, socketio, cors
-from .routes import websocket # noqa: F401
-import secrets
+from flask import Flask # noqA
+from .extensions import socketio, cors
+from .config import Config
+from .logic.storage import Database
 
-cors.init_app(app)
-socketio.init_app(app, cors_allowed_origins="*")
+db = Database()
 
-app.config['SECRET_KEY'] = secrets.token_hex(16)
+def create_app(config_class=Config):
+    app = Flask(__name__)
+    app.config.from_object(config_class)
+    cors.init_app(app)
+    socketio.init_app(app, cors_allowed_origins="*")
 
-@app.route('/')
-def root():
-    return 'I am root'
+    @app.route('/')
+    def root():
+        return 'I am root'
 
-if __name__ == '__main__':
-    print("link : http://127.0.0.1:5003")
-    socketio.run(app, debug=False, port=5003)
+    with app.app_context():
+        from . import routes # noqA
+
+    return app
+
 
