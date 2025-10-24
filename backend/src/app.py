@@ -16,7 +16,7 @@ def create_app(config_class=Config):
         return 'I am root'
 
     with app.app_context():
-        from . import routes # noqA
+        from .routes import handlers # noqA
 
     return app
 
