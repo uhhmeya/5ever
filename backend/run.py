@@ -1,5 +1,5 @@
-from src.app import create_app # creates DB
-from src.extensions import socketio
+from src.core.app import create_app # creates DB
+from src.core.extensions import socketio
 
 app = create_app()
 

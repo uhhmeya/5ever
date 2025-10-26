@@ -15,4 +15,8 @@ class Database:
             return True
         return False
 
+    def clear(self):
+        self.data.clear()
+        return True
+
 

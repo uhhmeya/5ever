@@ -1,12 +1,24 @@
 import time
-from tests.client import make_client
-from tests.cases import run_tests
+from tests.users.client import make_client
+from tests.users.admin import make_admin
+from tests.basic_test import run_basic_tests
 
 if __name__ == '__main__':
-    sio = make_client()
-    sio.connect('http://localhost:5003')
+    admin = make_admin()
+    admin.connect('http://localhost:5003')
+    admin.emit('clear_db')
+    admin.emit('clear_metrics')
 
-    run_tests(sio)
-    time.sleep(1)
+    bro1 = make_client()
+    bro1.connect('http://localhost:5003')
 
-    sio.disconnect()
+    print("\n=== TESTING ===")
+    run_basic_tests(bro1)
+    time.sleep(0.1)
+
+    print("\n=== METRICS ===")
+    admin.emit('get_metrics')
+    time.sleep(0.1)
+
+    bro1.disconnect()
+    admin.disconnect()

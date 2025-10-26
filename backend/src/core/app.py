@@ -1,7 +1,7 @@
 from flask import Flask # noqA
 from .extensions import socketio, cors
 from .config import Config
-from .logic.storage import Database
+from ..things.storage import Database
 
 db = Database()
 
@@ -16,7 +16,7 @@ def create_app(config_class=Config):
         return 'I am root'
 
     with app.app_context():
-        from .routes import handlers # noqA
+        from ..routes.handlers import admin, client # noqA
 
     return app
 
