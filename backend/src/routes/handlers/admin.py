@@ -1,19 +1,20 @@
 from flask_socketio import emit
 from ...core.extensions import socketio
 from ...core.app import db
-from ...things.tracker import tracker
+from ...things.trackers.time import Time
+from ...things.trackers.count import Counter
 
-@socketio.on('clear_db')
-def handle_reset_db():
+@socketio.on('clear')
+def handle_clear():
     db.data.clear()
-    emit('reset_response', {'success': True})
+    Time.clear()
+    Counter.clear()
 
 @socketio.on('get_metrics')
-def handle_get_metrics():
-    metrics = tracker.get_metrics()
-    emit('metrics_response', metrics)
-
-@socketio.on('clear_metrics')
-def handle_clear_metrics():
-    tracker.reset()
-    emit('clear_metrics_response', {'success': True})
+def handle_get_time_metrics():
+    time_metrics = Time.get_metrics()
+    count_metrics = Counter.get_metrics()
+    emit('metrics_response', {
+        'time': time_metrics,
+        'count': count_metrics
+    })

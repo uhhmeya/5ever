@@ -1,34 +1,25 @@
 import socketio
+from ..helpers.extract import extract
+
 
 def make_client():
     sio = socketio.Client()
 
     @sio.on('set_response')
-    def handle_set_response(data):
-        key = data['key']
-        value = data['value']
-        latency = data.get('latency', 0)
-
-        if data['success']:
-            status = '✅'
-        else:
-            status = '❌'
-
-        print(f"[SET] {status} {key} = {value} ({latency:.2f}ms)")
+    @extract('key', 'value', 'success')
+    def handle_set_response(key, value, success):
+        status = '✅' if success else '❌'
+        print(f"[SET] {status} {key} = {value}")
 
     @sio.on('get_response')
-    def handle_get_response(data):
-        key = data['key']
-        value = data['value']
+    @extract('key', 'value')
+    def handle_get_response(key, value):
         print(f"[GET] {key} = {value}")
 
     @sio.on('del_response')
-    def handle_del_response(data):
-        key = data['key']
-
-        if data['change']:
-            print(f"[DEL] {key} (found)")
-        else:
-            print(f"[DEL] {key} (not found)")
+    @extract('key', 'found')
+    def handle_del_response(key, found):
+        if found: print(f"[DEL] {key} (found)")
+        else: print(f"[DEL] {key} (not found)")
 
     return sio

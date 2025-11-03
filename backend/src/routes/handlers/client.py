@@ -1,55 +1,51 @@
-import time
 from flask_socketio import emit
 from ...core.extensions import socketio
 from ...core.app import db
-from ...things.tracker import tracker
-
+from ...things.trackers.time import Time
+from ...things.trackers.count import Counter
+from ...helpers.extract import extract
 
 @socketio.on('set')
-def handle_set(data):
-    start = time.time()
+@extract('key', 'value')
+def handle_set(key, value):
+    with Time.track():
+        success = db.set(key, value)
 
-    key = data.get('key')
-    value = data.get('value')
-    success = db.set(key, value)
-
-    latency = (time.time() - start) * 1_000
-    tracker.add('set', latency, success=success)
+    Counter.increment_total()
+    Counter.increment_set()
+    if success:
+        Counter.increment_success()
 
     emit('set_response', {
         'success': success,
         'key': key,
-        'value': value,
-        'latency': latency
+        'value': value
     })
 
-
 @socketio.on('get')
-def handle_get(data):
-    start = time.time()
+@extract('key')
+def handle_get(key):
+    with Time.track():
+        result = db.get(key)
 
-    key = data.get('key')
-    result = db.get(key)
-
-    latency = (time.time() - start) * 1_000
-    tracker.add('get', latency)
+    Counter.increment_total()
 
     emit('get_response', {
         'key': key,
         'value': result,
     })
 
+
 @socketio.on('del')
-def handle_del(data):
-    start = time.time()
+@extract('key')
+def handle_del(key):
+    with Time.track():
+        found = db.delete(key)
 
-    key = data.get('key')
-    change = db.delete(key)
-
-    latency = (time.time() - start) * 1_000
-    tracker.add('del', latency)
+    Counter.increment_total()
 
     emit('del_response', {
-        'change': change,
+        'found': found,
         'key': key
     })
+
