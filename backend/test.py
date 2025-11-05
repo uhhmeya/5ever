@@ -1,23 +1,32 @@
+from tests.client import make_client
+from tests.loadTest import run_load_test
 import time
-from tests.users.client import make_client
-from tests.users.admin import make_admin
-from tests.type.basic import run_basic_tests
 
 if __name__ == '__main__':
-    admin = make_admin()
-    admin.connect('http://localhost:5003')
-    admin.emit('clear')
 
-    bro1 = make_client()
-    bro1.connect('http://localhost:5003')
+    client = make_client()
+    client.connect('http://localhost:5003')
 
-    print("\n=== TESTING ===")
-    run_basic_tests(bro1)
-    time.sleep(0.1)
+    for rate in range(2000, 3001, 500):
 
-    admin.emit('get_metrics')
-    time.sleep(0.1)
+        client.emit('clear')
+        time.sleep(0.67)
 
-    bro1.disconnect()
-    admin.disconnect()
+        run_load_test(client, rate, duration=2)
+        time.sleep(0.67)
+
+        client.emit('get_metrics')
+        time.sleep(0.67)
+
+    client.disconnect()
+
+
+
+
+
+
+
+
+
+
 

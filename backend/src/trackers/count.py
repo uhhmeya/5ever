@@ -1,7 +1,5 @@
 import threading
 
-
-
 class RequestCounter:
 
     def __init__(self):
