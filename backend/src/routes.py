@@ -1,51 +1,36 @@
 from flask_socketio import emit
 from .core.extensions import socketio # noqa
 from .core.app import db # noqa
-from .helpers import extract # noqa
 from .trackers.concurrency import Concurrency # noqa
-from .trackers.time import Time # noqa
+from .trackers.latency import Latency # noqa
 from .trackers.count import Counter # noqa
 
-
 @socketio.on('set')
-@extract('key', 'value')
-def handle_set(key, value):
+def handle_set(data):
+    k,v = data
     with Concurrency.track():
-        with Time.track():
-            success = db.set(key, value)
-
-    Counter.increment_total()
-    Counter.increment_set()
-    if success:
-        Counter.increment_success()
-
-
+        with Latency.track():
+            db.set(k,v)
+    Counter.increment()
 
 @socketio.on('get')
-@extract('key')
-def handle_get(key):
+def handle_get(k):
     with Concurrency.track():
-        with Time.track():
-            db.get(key)
-
-    Counter.increment_total()
-
-
+        with Latency.track():
+            db.get(k)
+    Counter.increment()
 
 @socketio.on('del')
-@extract('key')
-def handle_del(key):
+def handle_del(k):
     with Concurrency.track():
-        with Time.track():
-            db.delete(key)
-
-    Counter.increment_total()
-
+        with Latency.track():
+            db.delete(k)
+    Counter.increment()
 
 @socketio.on('get_metrics')
 def handle_get_time_metrics():
     emit('metrics_response', {
-        'time': Time.get_metrics(),
+        'time': Latency.get_metrics(),
         'count': Counter.get_metrics(),
         'concurrency': Concurrency.get_metrics()
     })
@@ -53,6 +38,10 @@ def handle_get_time_metrics():
 @socketio.on('clear')
 def handle_clear():
     db.data.clear()
-    Time.clear()
+    Latency.clear()
     Counter.clear()
     Concurrency.clear()
+
+@socketio.on('start_timer')
+def start_timer(exp):
+    Counter.start_timer(exp)

@@ -1,38 +1,39 @@
 import threading
+import time
 
-class RequestCounter:
+class CountTracker:
 
     def __init__(self):
-        self._lock = threading.Lock()
-        self._total = 0
-        self._set_total = 0
-        self._success = 0
+        self.lock = threading.Lock()
+        self.total = 0
+        self.exp = 0
+        self.start = None
+        self.duration = None
 
+    def start_timer(self, exp):
+        with self.lock:
+            self.start = time.time()
+            self.exp = exp
 
-    def increment_total(self):
-        with self._lock:
-            self._total += 1
+    def increment(self):
+        with self.lock:
+            self.total += 1
+            if self.total >= self.exp:
+                self.duration = time.time() - self.start
 
-    def increment_set(self):
-        with self._lock:
-            self._set_total += 1
-
-    def increment_success(self):
-        with self._lock:
-            self._success += 1
 
     def get_metrics(self):
-        with self._lock:
+        with self.lock:
             return {
-                'total_requests': self._total,
-                'set_success': self._success,
-                'set_failure': self._set_total - self._success,
+                'total_requests': self.total,
+                'duration' : self.duration
             }
 
     def clear(self):
-        with self._lock:
-            self._total = 0
-            self._set_total = 0
-            self._success = 0
+        with self.lock:
+            self.total = 0
+            self.start = None
+            self.exp = 0
+            self.duration = None
 
-Counter = RequestCounter()
+Counter = CountTracker()

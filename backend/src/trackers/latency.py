@@ -3,33 +3,27 @@ import threading
 from contextlib import contextmanager
 
 
-class TimeTracker:
-
+class LatencyTracker:
     def __init__(self):
-        self._lock = threading.Lock()
+        self.lock = threading.Lock()
         self.latencies = []
-        self.first = None
 
     @contextmanager
     def track(self):
         start = time.time()
-        try : yield
+        try:
+            yield
         finally:
             end = time.time()
             latency = (end - start) * 1000
-            with self._lock:
-                if self.first is None:
-                    self.first = start # start timer
-                self.latencies.append(latency) # log latency
+            with self.lock:
+                self.latencies.append(latency)
 
     def clear(self):
-        with self._lock:
+        with self.lock:
             self.latencies = []
-            self.first = None
 
-    # must be called at end
     def get_metrics(self):
-        duration = time.time() - self.first
         return {
             'min_latency': self._get_min_latency(self.latencies),
             'max_latency': self._get_max_latency(self.latencies),
@@ -37,7 +31,6 @@ class TimeTracker:
             'p50_latency': self._get_p50_latency(self.latencies),
             'p95_latency': self._get_p95_latency(self.latencies),
             'p99_latency': self._get_p99_latency(self.latencies),
-            'duration': duration,
         }
 
     @staticmethod
@@ -69,7 +62,8 @@ class TimeTracker:
         if not latencies:
             return 0.0
         sorted_lats = sorted(latencies)
-        p95_index = int(len(sorted_lats) * 0.95)
+        # Fixed: Ensure index is within bounds
+        p95_index = min(int(len(sorted_lats) * 0.95), len(sorted_lats) - 1)
         return sorted_lats[p95_index]
 
     @staticmethod
@@ -77,7 +71,7 @@ class TimeTracker:
         if not latencies:
             return 0.0
         sorted_lats = sorted(latencies)
-        p99_index = int(len(sorted_lats) * 0.99)
+        p99_index = min(int(len(sorted_lats) * 0.99), len(sorted_lats) - 1)
         return sorted_lats[p99_index]
 
     @staticmethod
@@ -85,7 +79,7 @@ class TimeTracker:
         if not latencies:
             return 0.0
         sorted_lats = sorted(latencies)
-        p50_index = int(len(sorted_lats) * 0.50)
+        p50_index = min(int(len(sorted_lats) * 0.50), len(sorted_lats) - 1)
         return sorted_lats[p50_index]
 
-Time = TimeTracker()
+Latency = LatencyTracker()

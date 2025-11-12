@@ -1,36 +1,34 @@
 import socketio
 
-
 def make_client():
     sio = socketio.Client()
 
     @sio.on('metrics_response')
     def handle_metrics_response(data):
-        print_time_metrics(data['time'])
-        print_count_metrics(data['count'], data['time']['duration'])
+        print_latency_metrics(data['time'])
+        print_count_metrics(data['count'])
         print_concurrency_metrics(data['concurrency'])
 
     return sio
 
 
-def print_time_metrics(time_data):
+def print_latency_metrics(time_data):
     print("\n=== Time Metrics ===")
-    print(f"Duration: {time_data['duration']:.4f}s")
-    print(f"Min Latency: {time_data['min_latency']:.6f}ms")
-    print(f"Max Latency: {time_data['max_latency']:.6f}ms")
-    print(f"Mean Latency: {time_data['mean_latency']:.6f}ms")
-    print(f"P50 Latency: {time_data['p50_latency']:.6f}ms")
-    print(f"P95 Latency: {time_data['p95_latency']:.6f}ms")
-    print(f"P99 Latency: {time_data['p99_latency']:.6f}ms")
+    print(f"Min Latency: {time_data['min_latency']:.2f}ms")
+    print(f"Max Latency: {time_data['max_latency']:.2f}ms")
+    print(f"Mean Latency: {time_data['mean_latency']:.2f}ms")
+    print(f"P50 Latency: {time_data['p50_latency']:.2f}ms")
+    print(f"P95 Latency: {time_data['p95_latency']:.2f}ms")
+    print(f"P99 Latency: {time_data['p99_latency']:.2f}ms")
 
 
-def print_count_metrics(count_data, duration):
+def print_count_metrics(count_data):
+    duration = count_data.get('duration')
+    throughput = count_data['total_requests'] / duration
+
     print("\n=== Count Metrics ===")
     print(f"Total Requests: {count_data['total_requests']}")
-    print(f"SET Success: {count_data['set_success']}")
-    print(f"SET Failure: {count_data['set_failure']}")
-
-    throughput = count_data['total_requests'] / duration
+    print(f"Duration: {duration:.2f}s")
     print(f"Throughput: {throughput:.2f} req/s")
 
 
