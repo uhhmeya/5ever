@@ -1,16 +1,15 @@
 from tests.client import make_client
-from tests.rateTest import run_rate_test
+from tests.ratetest import rTest
 
 if __name__ == '__main__':
 
-    client = make_client()
-    client.connect('http://localhost:5003')
+    c = make_client()
 
-    for rate in range(2000, 3001, 500):
-        run_rate_test(client, rate, duration=2)
+    print("")
+    for r in range(5000, 10_001, 2500):
+        rTest(c,r,2)
 
-
-    client.disconnect()
+    c.disconnect()
 
 
 
