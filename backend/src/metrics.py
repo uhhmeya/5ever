@@ -1,17 +1,18 @@
-import threading
+import gevent
+from gevent.lock import Semaphore
 from contextlib import contextmanager
 import time
 
-S = threading.Lock()
+S = Semaphore()
 _active = 0
 _peak = 0
 _samples = []
 _total = 0
 
-L = threading.Lock()
+L = Semaphore()
 _lats = []
 
-# only written once
+# 1 wr only
 EXP = 0
 START = None
 DUR = None
@@ -40,6 +41,7 @@ def track():
 
             if _total == EXP :
                 DUR = time.time() - START
+                # end test
 
 def start(exp):
     global START, EXP
@@ -59,6 +61,11 @@ def clear():
 
 
 def get_metrics():
+
+    if DUR is None:
+        print("DUR IS NONE. TEST IS NOT DONE. METRICS = INCOMPLETE")
+        return None
+
     slats = sorted(_lats)
     ssamp = sorted(_samples)
     ns = len(ssamp)
@@ -82,3 +89,6 @@ def get_metrics():
         'totalR': _total,
         'dur': DUR
     }
+
+
+

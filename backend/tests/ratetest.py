@@ -1,39 +1,39 @@
-import random
+from gevent import monkey
+monkey.patch_all()
+
 import time
+import threading
+from tests.client import make_client, send_req, client
 
-def rTest(c,r,dur):
-
+def rTest(r, dur):
     print(f"{r} r/s for {dur}s :")
 
-    exp = int(r * dur)
-    t = 1.0/r
+    num_threads = 10
+    threads = []
+    total = int(r * dur)
+    batch = total // num_threads
+    rate = r / num_threads
 
-    c.emit('clear')
-    c.emit('start', exp)
+    with client() as mc:
+        mc.emit('start', total)
+        for i in range(num_threads):
+            w = threading.Thread(target=send_batch, args=(batch, rate))
+            w.start()
+            threads.append(w)
+        for thread in threads: thread.join() # blocks mc
+        mc.emit('metrics')
+        time.sleep(10)  # fix
 
-    s = time.time()
+def wait(delay, start):
+    elapsed = time.time() - start
+    x = delay - elapsed
+    if x > 0:
+        time.sleep(x)
 
-    for i in range(exp):
-        x = s+i*t
-        wait_until(x)
-        send_request(c)
-
-    c.emit('metrics')
-
-    time.sleep(0.2)
-
-
-def send_request(c):
-    x = random.randint(1, 3)
-    if x == 1 : c.emit('set', [k(), v()])
-    elif x == 2 : c.emit('get', k())
-    else: c.emit('del', k())
-
-def wait_until(x):
-    now = time.time()
-    if now < x:
-        time.sleep(x-now)
-
-def k(): return f'key_{random.randint(0, 100)}'
-
-def v(): return f'value_{random.randint(0, 1000)}'
+def send_batch(b, r):
+    with client() as c:
+        delay = 1.0 / r
+        for _ in range(b):
+            start = time.time()
+            send_req(c)
+            wait(delay, start)

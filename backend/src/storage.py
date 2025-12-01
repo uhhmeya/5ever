@@ -1,9 +1,10 @@
-import threading
+from gevent.lock import Semaphore
 
 class Database:
+
     def __init__(self):
         self.data = {}
-        self.lock = threading.Lock()
+        self.lock = Semaphore() 
 
     def get(self, k):
         with self.lock:

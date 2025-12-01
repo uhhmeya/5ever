@@ -1,35 +1,36 @@
 from flask_socketio import emit
-from .core.extensions import socketio # noqa
-from .core.app import db # noqa
-from . import metrics as m # noqa
-
+from .core.extensions import socketio
+from .core.app import db
+from . import metrics as m
 
 @socketio.on('set')
-def hset(data):
+def Hset(data):
     k,v = data
     with m.track():
         db.set(k,v)
 
 @socketio.on('get')
-def hget(k):
+def Hget(k):
     with m.track():
         db.get(k)
 
 @socketio.on('del')
-def hdel(k):
+def Hdel(k):
     with m.track():
         db.delete(k)
 
 @socketio.on('metrics')
-def hgm():
+def Hmet():
     emit('response', m.get_metrics())
 
-@socketio.on('clear')
-def hclear():
-    db.data.clear()
-    m.clear()
-
 @socketio.on('start')
-def hstart(exp):
+def Hstart(exp):
+    m.clear()
+    db.data.clear()
     m.start(exp)
+
+
+
+
+
 
