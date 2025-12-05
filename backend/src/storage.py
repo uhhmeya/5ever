@@ -7,8 +7,7 @@ class Database:
         self.lock = Semaphore() 
 
     def get(self, k):
-        with self.lock:
-            return self.data.get(k)
+        return self.data.get(k)
 
     def set(self, k, v):
         with self.lock:
@@ -16,11 +15,10 @@ class Database:
             return True
 
     def delete(self, k):
-        with self.lock:
-            if k in self.data:
-                del self.data[k]
-                return True
-            return False
+        if k in self.data:
+            del self.data[k]
+            return True
+        return False
 
     def clear(self):
         with self.lock:

@@ -3,7 +3,7 @@ from .extensions import socketio, cors
 from .config import Config
 from ..storage import Database
 
-db = Database()
+DB = Database()
 
 def create_app(config_class=Config):
     app = Flask(__name__)

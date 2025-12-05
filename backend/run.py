@@ -1,9 +1,6 @@
 from gevent import monkey
 monkey.patch_all()
-
-import logging
-from src.core.app import create_app # creates DB
-from src.core.extensions import socketio
+from src.core.app import create_app
 from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 
