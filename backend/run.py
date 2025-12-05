@@ -1,12 +1,11 @@
-from gevent import monkey
-monkey.patch_all()
+import logging
 from src.core.app import create_app
-from gevent.pywsgi import WSGIServer
-from geventwebsocket.handler import WebSocketHandler
+from src.core.extensions import socketio
+
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 app = create_app()
 
 if __name__ == '__main__':
-    http_server = WSGIServer(('127.0.0.1', 5003),app, handler_class=WebSocketHandler,log=None,error_log=None)
-    http_server.serve_forever()
-
+    socketio.run(app, host='127.0.0.1', port=5003, debug=False, use_reloader=False, log_output=False)

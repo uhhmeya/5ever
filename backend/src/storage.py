@@ -1,10 +1,10 @@
-from gevent.lock import Semaphore
+import threading
 
 class Database:
 
     def __init__(self):
         self.data = {}
-        self.lock = Semaphore() 
+        self.lock = threading.Lock()
 
     def get(self, k):
         return self.data.get(k)
@@ -15,10 +15,11 @@ class Database:
             return True
 
     def delete(self, k):
-        if k in self.data:
-            del self.data[k]
-            return True
-        return False
+        with self.lock:
+            if k in self.data:
+                del self.data[k]
+                return True
+            return False
 
     def clear(self):
         with self.lock:

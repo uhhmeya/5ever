@@ -1,11 +1,8 @@
-from gevent import monkey
-monkey.patch_all()
 import time
 import threading
 import socketio
 import random
 from contextlib import contextmanager
-from gevent.event import Event
 
 def rTest(r, dur, event):
     print(f"{r} r/s for {dur}s :")
@@ -52,8 +49,9 @@ def println(data):
 
 def main():
     print(" ")
-    for r in range(10_000, 100_001, 15_000):
-        rTest(r, 2, Event())
+    event = threading.Event()
+    for r in range(10_000, 50_001, 20_000):
+        rTest(r, 2, event)
 
 if __name__ == '__main__':
     main()

@@ -1,3 +1,4 @@
+import time
 from flask.globals import request
 from flask_socketio import emit # noqa
 from .core.extensions import socketio # noqa
@@ -8,16 +9,19 @@ from . import metrics as M # noqa
 def Hset(data):
     k,v = data
     with M.track():
+        time.sleep(0.001)
         DB.set(k,v)
 
 @socketio.on('get')
 def Hget(k):
     with M.track():
+        time.sleep(0.001)
         DB.get(k)
 
 @socketio.on('del')
 def Hdel(k):
     with M.track():
+        time.sleep(0.001)
         DB.delete(k)
 
 @socketio.on('start')
